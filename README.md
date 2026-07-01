@@ -1,0 +1,2 @@
+# chess-magnus
+AI-Assignment
