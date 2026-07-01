@@ -1,12 +1,13 @@
-# ♟️ Magnus Chess AI
+# ♟️ Magnus Chess AI Arena
 
-Sebuah aplikasi antarmuka web interaktif untuk bermain catur melawan model AI kustom yang dilatih menggunakan TensorFlow/Keras. Proyek ini memisahkan logika backend (pengolahan prediksi model AI) dan frontend (UI interaktif menggunakan Streamlit dan Chessboard.js).
+Sebuah aplikasi antarmuka web interaktif modern untuk bermain catur melawan AI. Proyek ini memisahkan logika backend (engine catur) dan frontend (UI interaktif Streamlit + Chessboard.js).
 
 ## ✨ Fitur Utama
-- **Frontend Interaktif:** Menggunakan antarmuka papan catur interaktif (*Drag-and-Drop*) tanpa perlu mengetik teks langkah secara manual.
-- **Auto-Move AI:** Ketika Anda selesai melangkah, AI akan merespons secara otomatis tanpa perlu menekan tombol tambahan.
-- **Arsitektur Modular:** Memisahkan komponen UI Streamlit dengan mesin pemroses catur di backend.
-- **Kustomisasi Model:** Mudah untuk mengganti atau memperbarui bobot model AI Anda di dalam folder `models/`.
+- **UI/UX Modern:** Tampilan gaya dashboard, panel status game, histori langkah, dan desain responsif untuk desktop/mobile.
+- **Frontend Interaktif:** Papan catur drag-and-drop tanpa input teks langkah.
+- **Auto-Move AI:** AI bergerak otomatis saat giliran hitam.
+- **Fallback Engine Cerdas:** Jika model TensorFlow tidak tersedia, engine tetap berjalan dengan heuristik material (lebih baik dari random).
+- **Arsitektur Modular:** Pemisahan komponen UI dan mesin catur backend.
 
 ## 📂 Struktur Direktori
 ```text
@@ -16,23 +17,22 @@ Chees_magnus/
 ├── frontend/
 │   ├── app.py                  # Skrip utama Streamlit
 │   └── chessboard_component/   # Komponen kustom Javascript (Chessboard.js)
-├── models/
-│   └── README.md               # Tempat Anda meletakkan file model_catur_magnus.keras
 ├── requirements.txt            # Daftar pustaka/dependencies instalasi
 └── run_app.bat                 # Script batch pintar untuk menjalankan aplikasi di Windows
 ```
 
 ## 🚀 Cara Menjalankan Aplikasi
 
-### 1. Persiapan Model
-Pastikan Anda sudah memiliki model Keras yang telah dilatih (misalnya `model_catur_magnus.keras`).
-Pindahkan file model Anda ke dalam direktori `models/`:
-```text
-Chees_magnus/models/model_catur_magnus.keras
-```
+### 1. (Opsional) Persiapan Model TensorFlow
+Anda bisa menaruh model `model_catur_magnus.keras` di salah satu lokasi berikut:
+
+- `Chees_magnus/models/model_catur_magnus.keras`
+- root proyek: `model_catur_magnus.keras`
+
+Jika model tidak ada, aplikasi tetap berjalan menggunakan fallback engine heuristik.
 
 ### 2. Instalasi Dependensi
-Pastikan **Python** (versi 3.8 ke atas disarankan) sudah terinstal di komputer Anda.
+Pastikan **Python** (versi 3.10+ disarankan) sudah terinstal di komputer Anda.
 Buka Terminal/Command Prompt di dalam folder proyek ini, dan jalankan perintah berikut untuk menginstal pustaka yang diperlukan:
 ```bash
 pip install -r requirements.txt
@@ -47,8 +47,23 @@ Jika Anda menggunakan OS lain atau ingin menjalankannya lewat terminal:
 python -m streamlit run frontend/app.py
 ```
 
-## ⚙️ Penyesuaian Input Model (Opsional)
-Jika arsitektur input data pada model Anda berbeda dari tensor matriks berukuran `(8, 8, 12)`, Anda bisa memodifikasi fungsi `board_to_tensor` dan metode `get_best_move` yang berada pada file `backend/chess_engine.py`.
+## ☁️ Deploy ke Streamlit Community Cloud
+
+1. Push proyek Anda ke GitHub.
+2. Buka Streamlit Community Cloud, lalu klik **Create app**.
+3. Pilih repository: `YoungTheBeginner/chess-magnus`.
+4. Isi **Main file path** dengan:
+	```text
+	depoyment/Chees_magnus/frontend/app.py
+	```
+5. Deploy.
+
+Catatan:
+- Agar deploy ringan dan stabil, `requirements.txt` hanya memuat dependency runtime utama.
+- Jika ingin memakai model TensorFlow di cloud, tambahkan paket TensorFlow secara manual lalu pastikan resource server mencukupi.
+
+## ⚙️ Penyesuaian Engine
+Jika arsitektur input data model Anda berbeda dari tensor `(8, 8, 12)`, ubah fungsi `board_to_tensor` dan strategi pemilihan langkah pada `backend/chess_engine.py`.
 
 ---
 *Dibuat untuk eksperimen AI & Pengembangan Web.*

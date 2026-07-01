@@ -9,7 +9,7 @@ env/
 ENV/
 
 # Streamlit specific
-.streamlit/
+.streamlit/secrets.toml
 
 # Models / Large Data
 # (Sebaiknya model Keras yang besar tidak di-push ke Github. Teman Anda bisa mengunduhnya secara terpisah dari GDrive/sumber lain)

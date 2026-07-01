@@ -3,7 +3,11 @@ import numpy as np
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-import tensorflow as tf
+
+try:
+    import tensorflow as tf
+except Exception:
+    tf = None
 
 class MagnusChessEngine:
     def __init__(self, model_path="models/model_catur_magnus.keras"):
@@ -13,6 +17,10 @@ class MagnusChessEngine:
 
     def load_model(self):
         """Loads the pre-trained keras model if it exists."""
+        if tf is None:
+            print("TensorFlow is not available. Using heuristic engine fallback.")
+            return
+
         if os.path.exists(self.model_path):
             try:
                 self.model = tf.keras.models.load_model(self.model_path)
@@ -47,6 +55,54 @@ class MagnusChessEngine:
             
         return np.expand_dims(tensor, axis=0)
 
+    def evaluate_board_material(self, board):
+        """Simple material score from white perspective."""
+        if board.is_checkmate():
+            return -9999 if board.turn == chess.WHITE else 9999
+        if board.is_stalemate() or board.is_insufficient_material():
+            return 0
+
+        piece_values = {
+            chess.PAWN: 1,
+            chess.KNIGHT: 3,
+            chess.BISHOP: 3,
+            chess.ROOK: 5,
+            chess.QUEEN: 9,
+            chess.KING: 0,
+        }
+
+        score = 0
+        for piece_type, value in piece_values.items():
+            score += len(board.pieces(piece_type, chess.WHITE)) * value
+            score -= len(board.pieces(piece_type, chess.BLACK)) * value
+        return score
+
+    def choose_heuristic_move(self, board):
+        """One-ply material maximizing move selection."""
+        legal_moves = list(board.legal_moves)
+        if not legal_moves:
+            return None
+
+        best_moves = []
+        maximizing = board.turn == chess.WHITE
+        best_score = -float("inf") if maximizing else float("inf")
+
+        for move in legal_moves:
+            board.push(move)
+            score = self.evaluate_board_material(board)
+            board.pop()
+
+            if maximizing and score > best_score:
+                best_score = score
+                best_moves = [move]
+            elif (not maximizing) and score < best_score:
+                best_score = score
+                best_moves = [move]
+            elif score == best_score:
+                best_moves.append(move)
+
+        return np.random.choice(best_moves) if best_moves else np.random.choice(legal_moves)
+
     def get_best_move(self, board):
         """
         Predicts the best move using the model.
@@ -57,15 +113,13 @@ class MagnusChessEngine:
             return None
             
         if self.model is None:
-            # Fallback to random move if model isn't loaded
-            return np.random.choice(legal_moves)
+            # Deterministic fallback when ML model is unavailable.
+            return self.choose_heuristic_move(board)
 
-        # Here you would typically evaluate all legal moves
-        # For demonstration, we just return a random legal move if 
-        # actual prediction logic is not yet implemented.
+        # Model-driven ranking is still project-specific and can be added later.
         # 
         # TO-DO: Implement your specific prediction logic:
         # e.g., predict score for each move and pick max.
         
-        # Placeholder fallback logic:
-        return np.random.choice(legal_moves)
+        # Temporary behavior while preserving model load pathway:
+        return self.choose_heuristic_move(board)
